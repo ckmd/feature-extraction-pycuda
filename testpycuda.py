@@ -30,8 +30,6 @@ __global__ void conv9(float *r9r, float *r9i, float *a9, float *f9r, float *f9i)
   int Idx = i + j * blockDim.x * gridDim.x;
   r9r[Idx] = a9[Idx] * f9r[Idx];
   r9i[Idx] = a9[Idx] * f9i[Idx];
-//  r5r[Idx] = a5[Idx] * f5r[Idx];
-//  r5i[Idx] = a5[Idx] * f5i[Idx];
 }
 
 __global__ void conv5(float *r5r, float *r5i, float *a5, float *f5r, float *f5i)
@@ -69,38 +67,45 @@ r5r = numpy.zeros_like(a5)
 r5i = numpy.zeros_like(a5)
 
 waktu = []
+conv33 = mod.get_function("conv33")
+conv17 = mod.get_function("conv17")
+conv9 = mod.get_function("conv9")
+conv5 = mod.get_function("conv5")
+
 # while True:
-for lol in range(1000):
+for lol in range(100):
   start = time.time()
   # max thread per block is 1024, and max block per grid is 304, so be careful
   # calculating parallel using GPU
-  conv33 = mod.get_function("conv33")
-  conv17 = mod.get_function("conv17")
-  conv9 = mod.get_function("conv9")
-  conv5 = mod.get_function("conv5")
   conv33(drv.Out(r33r), drv.Out(r33i), drv.In(a33), drv.In(f33r), drv.In(f33i), block=(68,4,1), grid=(33,33))
   conv17(drv.Out(r17r), drv.Out(r17i), drv.In(a17), drv.In(f17r), drv.In(f17i), block=(68,4,1), grid=(17,17))
   conv9(drv.Out(r9r), drv.Out(r9i), drv.In(a9), drv.In(f9r), drv.In(f9i), block=(68,4,1), grid=(9,9))
   conv5(drv.Out(r5r), drv.Out(r5i), drv.In(a5), drv.In(f5r), drv.In(f5i), block=(68,4,1), grid=(5,5))
-  # Using Numpy
-  # r33r = a33 * f33r
-  # r33r = a33 * f33r
-  # r17r = a17 * f17r
-  # r17r = a17 * f17r
-  # r9r = a9 * f9r
-  # r9r = a9 * f9r
-  # r5r = a5 * f5r
-  # r5r = a5 * f5r
+
+  splr33r = numpy.sum(numpy.split(r33r,272),axis = 1)
+  splr33i = numpy.sum(numpy.split(r33i,272),axis = 1)
+  splr17r = numpy.sum(numpy.split(r17r,272),axis = 1)
+  splr17i = numpy.sum(numpy.split(r17i,272),axis = 1)
+  splr9r = numpy.sum(numpy.split(r9r,272),axis = 1)
+  splr9i = numpy.sum(numpy.split(r9i,272),axis = 1)
+  splr5r = numpy.sum(numpy.split(r5r,272),axis = 1)
+  splr5i = numpy.sum(numpy.split(r5i,272),axis = 1)
+
+  mag33 = numpy.sqrt(splr33r**2 + splr33i**2)
+  mag17 = numpy.sqrt(splr17r**2 + splr17i**2)
+  mag9 = numpy.sqrt(splr9r**2 + splr9i**2)
+  mag5 = numpy.sqrt(splr5r**2 + splr5i**2)
+
+  phase33 = numpy.arctan(splr33i / splr33r)
+  phase17 = numpy.arctan(splr17i / splr17r)
+  phase9 = numpy.arctan(splr9i / splr9r)
+  phase5 = numpy.arctan(splr5i / splr5r)
+
+  # Normalisasi ke 0 dan 1 sebelum masuk ke NN
+
   end = time.time()
   waktu.append(end-start)
   print(end - start)
-  # print(r33r, len(r33r), sum(r33r))
-  # print(r33i, len(r33i), sum(r33i))
-  # print(r17r, len(r17r), sum(r17r))
-  # print(r17i, len(r17i), sum(r17i))
-  # print(r9r, len(r9r), sum(r9r))
-  # print(r9i, len(r9i), sum(r9i))
-  # print(r5r, len(r5r), sum(r5r))
-  # print(r5i, len(r5i), sum(r5i))
+  print(mag33)
 
 print("average time in second : ",sum(waktu)/len(waktu))
