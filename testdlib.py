@@ -13,7 +13,7 @@ cap = cv2.VideoCapture(0)
 while True:
     start = time.time()
     _,frame = cap.read()
-    frame = cv2.resize(frame,(400,360))
+    frame = cv2.resize(frame,(400,300))
     grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     cuda.set_device(0)
     faces = face_detector(grey)
@@ -54,8 +54,8 @@ while True:
         all_area9 = numpy.concatenate(all_area9).ravel()
         all_area5 = numpy.concatenate(all_area5).ravel()
         # filter33real = Gabor.filter1long
-        cv2.imshow("frame",frame)
-        cv2.waitKey(100)
+        cv2.imshow("frame",cv2.resize(frame,(640,480)))
+        cv2.waitKey(1)
         current = time.time()
         print(current - start, "ms")
         # if(key == 27):
