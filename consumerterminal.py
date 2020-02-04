@@ -13,4 +13,4 @@ while True:
             valjson['features'] = {int(k):float(v) for k,v in valjson['features'].items()}
             inputlayer = numpy.array([valjson['features'].values()])
             # sipp... input layer sudah sesuai dengan neural networknya
-            print(inputlayer)
+            print(inputlayer[0][0])
