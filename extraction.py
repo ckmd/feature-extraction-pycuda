@@ -158,12 +158,12 @@ while True:
 
           # combine each same size magnitude and phase into 1
           feature33 = numpy.concatenate((mag33, phase33)).astype('str')
-          feature17 = numpy.concatenate((mag17, phase17))
-          feature9 = numpy.concatenate((mag9, phase9))
-          feature5 = numpy.concatenate((mag5, phase5))
+          feature17 = numpy.concatenate((mag17, phase17)).astype('str')
+          feature9 = numpy.concatenate((mag9, phase9)).astype('str')
+          feature5 = numpy.concatenate((mag5, phase5)).astype('str')
 
           # Normalisasi ke 0 dan 1 sebelum masuk ke NN
-          # code was here ...
+          # code will place here ...
           
           # convert dari numpy ke dictionary
           json33 = dict(enumerate(feature33,1))
@@ -172,8 +172,8 @@ while True:
           json5 = dict(enumerate(feature5,1))
 
           # export json into files
-          # with open('data33.json','w') as f:
-          #   json.dump(json33,f)
+          with open('data33.json','wb') as f:
+            json.dump(json33,f)
           end = time.time()
           print('feature extraction ',end - current, 'ms')
           waktu.append(end-start)

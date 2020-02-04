@@ -4,34 +4,30 @@ from pykafka import KafkaClient
 
 client = KafkaClient(hosts="localhost:9092")
 
-topic = client.topics['bustopic']
+topic = client.topics['bustopic2']
 
 producer = topic.get_sync_producer()
 
-input_file = open('rute1.json')
-json_array = json.load(input_file)
-coordinates = json_array['features'][0]['geometry']['coordinates']
-print(coordinates)
+input_file = open('data33.json')
+features = json.load(input_file)
+# coordinates = json_array['features'][0]['geometry']['coordinates']
 
 def generate_uuid():
     return uuid.uuid4()
 
 data = {}
-data['busline'] = '001'
+data['jetsonid'] = '001'
+data['features'] = {}
 
-def generate_checkpoint(coordinates):
-    i = 0
-    while i < len(coordinates):
-        data['key'] = data['busline'] + '_' + str(generate_uuid)
+def produce():
+    while True:
+        # data['key'] = data['jetsonid'] + '_' + str(generate_uuid)
         data['timestamp'] = str(datetime.utcnow())
-        data['latitude'] = coordinates[i][0]
-        data['longitude'] = coordinates[i][1]
+        for i in range(len(features)):
+            data['features'][str(i+1)] = features[str(i+1)]
         message = json.dumps(data)
         producer.produce(message.encode('ascii'))
         print(message)
-        if(i == len(coordinates)-1):
-            i = 0
-        else:
-            i += 1
+        exit()
 
-generate_checkpoint(coordinates)
+produce()
