@@ -1,5 +1,4 @@
 import cv2, os, glob, re, time, numpy
-import matplotlib.pyplot as plt
 
 start = time.time()
 def splitstring(word):
@@ -13,10 +12,12 @@ label = []
 name = []
 # read several image
 for i in range(90):
-    print("read data : ",numpy.round(i/89*100,2),"%")
-    img_dir = "90subject-Cleaned/Subject" + str(i+1) # Enter Directory of all images 
-    data_path = os.path.join(img_dir,'*jpg')
-    files = glob.glob(data_path)
+    print("read data : ",numpy.round(float(i)/89*100,2),'%')
+    img_dir = "dataset/90subject-Cleaned/Subject" + str(i+1) # Enter Directory of all images 
+    types = ('*.jpg','*.Jpg')
+    files = []
+    for f in types:
+        files.extend(glob.glob(os.path.join(img_dir,f)))
 
     for f1 in files:
         image = cv2.imread(f1)

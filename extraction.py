@@ -2,6 +2,7 @@ import cv2, numpy, dlib, os, time, Gabor, json
 import dlib.cuda as cuda
 import pycuda.autoinit
 import pycuda.driver as drv
+import read90subject as r90
 
 # kafka needed
 # from datetime import datetime
@@ -54,8 +55,9 @@ __global__ void conv5(float *r5r, float *r5i, float *a5, float *f5r, float *f5i)
 data = {}
 data['jetsonid'] = '001'
 data['features'] = {}
-def stream(features):
+def stream(features, label):
   data['timestamp'] = str(datetime.utcnow())
+  data['label'] = label
   for dol in range(len(features)):
       data['features'][dol+1] = features[dol+1]
   message = json.dumps(data)
@@ -90,15 +92,22 @@ conv5 = mod.get_function("conv5")
 face_detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("Rachmad_ws/python/shape_predictor_68_face_landmarks.dat")
 print("Hellocuda")
-cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(0)
 x,y = 480,360
 
-while True:
+subject90 = r90.data
+label90 = r90.label
+# realtime
+# while True:
+#     _,cam = cap.read()
+#     cam = cv2.flip(cam,1)
+#     frame = cv2.resize(cam,(x,y))
+#     grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+for s in range(len(subject90)):
     start = time.time()
-    _,cam = cap.read()
-    cam = cv2.flip(cam,1)
-    frame = cv2.resize(cam,(x,y))
-    grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    ri = numpy.random.randint(len(subject90))
+    frame = subject90[s]
+    grey = frame
     faces = face_detector(grey)
     for face in faces:
         all_area33 = []
@@ -111,11 +120,11 @@ while True:
         y2 = face.bottom()
         landmark = predictor(grey, face)
         if(x1 > 20 and y1 > 20 and x2 < (x-20) and (y2 < y-20)):
-          cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,255),4)
+          # cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,255),4)
           for i in range(0,68):
               x0 = landmark.part(i).x
               y0 = landmark.part(i).y
-              cv2.circle(frame, (x0,y0), 1, (0,255,255),2)
+              # cv2.circle(frame, (x0,y0), 1, (0,255,255),2)
 
               # get sorround area of each single point
               area33 = grey[y0-16:y0+17, x0-16:x0+17]/255.0
@@ -123,14 +132,14 @@ while True:
               area9 = grey[y0-4:y0+5, x0-4:x0+5]/255.0
               area5 = grey[y0-2:y0+3, x0-2:x0+3]/255.0
 
-              # multiply each sorround area 4 times for same with filter later
+              # multiply each sorround area 4 times for same with filter for 4 orientation convolution
               for dup in range(4):
                   all_area33.append(area33)
                   all_area17.append(area17)
                   all_area9.append(area9)
                   all_area5.append(area5)
 
-          # flatteding before enter cuda calculation
+          # flattening before enter cuda calculation
           a33 = numpy.concatenate(all_area33).ravel().astype(numpy.float32)
           a17 = numpy.concatenate(all_area17).ravel().astype(numpy.float32)
           a9 = numpy.concatenate(all_area9).ravel().astype(numpy.float32)
@@ -171,34 +180,21 @@ while True:
 
           # combine each same size magnitude and phase into 1
           featureall = numpy.concatenate((mag33, phase33, mag17, phase17, mag9, phase9, mag5, phase5))
-          # feature33 = numpy.concatenate((mag33, phase33)).astype('str')
-          # feature17 = numpy.concatenate((mag17, phase17)).astype('str')
-          # feature9 = numpy.concatenate((mag9, phase9)).astype('str')
-          # feature5 = numpy.concatenate((mag5, phase5)).astype('str')
 
           # Normalisasi ke 0 dan 1 sebelum masuk ke NN
-          print(featureall.shape)
           normalize = ((featureall - numpy.amin(featureall)) * 1) / ( numpy.amax(featureall) - numpy.amin(featureall))
-          print(numpy.max(normalize), numpy.min(normalize))
+          # print(numpy.max(normalize), numpy.min(normalize))
           
           # convert to string before to dictionary
-          # code will place here ...
           normalize = normalize.astype('str')
           # convert dari numpy ke dictionary
           jsonall = dict(enumerate(normalize,1))
-          # json33 = dict(enumerate(feature33,1))
-          # json17 = dict(enumerate(feature17,1))
-          # json9 = dict(enumerate(feature9,1))
-          # json5 = dict(enumerate(feature5,1))
-
-          # export json into files
-          # with open('data33.json','w') as f:
-          #   json.dump(json5,f)
-
-          # stream(json33)
+          # stream the data using kafka
+          # stream(json33, label90[s])
 
           end = time.time()
           print('all time : ',end - start, 'ms')
           waktu.append(end-start)
-    cv2.imshow("camera",cam)
-    cv2.waitKey(1)
+    # realtime
+    # cv2.imshow("camera",cam)
+    # cv2.waitKey(1)
