@@ -5,12 +5,12 @@ import pycuda.driver as drv
 import read90subject as r90
 
 # kafka needed
-# from datetime import datetime
-# from pykafka import KafkaClient
+from datetime import datetime
+from pykafka import KafkaClient
 
-# client = KafkaClient(hosts="localhost:9092")
-# topic = client.topics['bustopic2']
-# producer = topic.get_sync_producer()
+client = KafkaClient(hosts="localhost:9092")
+topic = client.topics['bustopic3']
+producer = topic.get_sync_producer()
 # kafka needed
 
 from pycuda.compiler import SourceModule
@@ -55,11 +55,13 @@ __global__ void conv5(float *r5r, float *r5i, float *a5, float *f5r, float *f5i)
 data = {}
 data['jetsonid'] = '001'
 data['features'] = {}
+data['label'] = {}
 def stream(features, label):
   data['timestamp'] = str(datetime.utcnow())
-  data['label'] = label
   for dol in range(len(features)):
       data['features'][dol+1] = features[dol+1]
+      if(dol < 90):
+        data['label'][dol+1] = label[dol+1]
   message = json.dumps(data)
   producer.produce(message.encode('ascii'))
 
@@ -188,9 +190,11 @@ for s in range(len(subject90)):
           # convert to string before to dictionary
           normalize = normalize.astype('str')
           # convert dari numpy ke dictionary
+          print(normalize.shape, label90[s].shape)
           jsonall = dict(enumerate(normalize,1))
+          labelall = dict(enumerate(label90[s],1))
           # stream the data using kafka
-          # stream(json33, label90[s])
+          stream(jsonall, labelall)
 
           end = time.time()
           print('all time : ',end - start, 'ms')
