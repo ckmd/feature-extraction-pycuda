@@ -1,8 +1,8 @@
 from pykafka import KafkaClient
-import json, pandas, pickle, numpy
+import json, pandas, pickle, numpy, time
 
 # print("Initializing ... ")
-topicname = 'bustopic3'
+topicname = 'bustopic11'
 client = KafkaClient(hosts='localhost:9092')
 consumer = client.topics[topicname].get_simple_consumer()
 
@@ -11,19 +11,27 @@ def sigmoid(x):
 def sigmoid_der(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
-# Defining Neural Network Synapse
-numpy.random.seed(0)
-weights = 2 * numpy.random.rand(2176,1000) - 1
-weights2 = 2 * numpy.random.rand(1000,90) - 1
-bias = 2 * numpy.random.rand(1,1000) - 1
-bias2 = 2 * numpy.random.rand(1,90) - 1
+# load trained model
+weights = pickle.load(open("model/syn0.pickle", "rb"))
+weights2 = pickle.load(open("model/syn1.pickle", "rb"))
+bias = pickle.load(open("model/bias.pickle", "rb"))
+bias2 = pickle.load(open("model/bias2.pickle", "rb"))
+
+# Defining Neural Network Synapse for the first time
+# numpy.random.seed(0)
+# weights = 2 * numpy.random.rand(2176,900) - 1
+# weights2 = 2 * numpy.random.rand(900,90) - 1
+# bias = 2 * numpy.random.rand(1,900) - 1
+# bias2 = 2 * numpy.random.rand(1,90) - 1
 lr = 0.05
 iterration = 1
-
+datake = 1
+accuracy = 0
 print("waiting for message")
 while True:
     for message in consumer:
         if message is not None:
+            start = time.time()
             val = message.offset, message.value
             valjson = json.loads(val[1])
             # convert the string:string dictionary into int:float
@@ -38,7 +46,7 @@ while True:
             z = sigmoid(numpy.dot(l1, weights2) + bias2)
             # backpropagation step 1
             error = z - labellayer
-            print(z)
+            # print(z)
             # backpropagation step 2
             dcost_dpred = error
             dpred_dz = sigmoid_der(z)
@@ -58,19 +66,27 @@ while True:
 
             for num in l1_delta:
                 bias -= lr * num
-            print(iterration)
-            if(iterration < 14):
+
+            end = time.time()
+            print('pred : ',numpy.argmax(z),'truth : ',numpy.argmax(labellayer))
+            if(numpy.argmax(z) == numpy.argmax(labellayer)):
+                accuracy += 1
+            print('data ke : ',datake, 'acc : ',float(accuracy)/datake*100,'time : ',end-start)
+            datake += 1
+
+            if(iterration < 600):
                 iterration += 1
             else:
-                iterration = 0
+                iterration = 1
+                print("updating model ...")
                 # Save Synapse / Model into Pickle
-                pickle_out = open("pickle/syn0.pickle", "wb")
+                pickle_out = open("model/syn0.pickle", "wb")
                 pickle.dump(weights, pickle_out)
-                pickle_out = open("pickle/syn1.pickle", "wb")
+                pickle_out = open("model/syn1.pickle", "wb")
                 pickle.dump(weights2, pickle_out)
-                pickle_out = open("pickle/bias.pickle", "wb")
+                pickle_out = open("model/bias.pickle", "wb")
                 pickle.dump(bias, pickle_out)
-                pickle_out = open("pickle/bias2.pickle", "wb")
+                pickle_out = open("model/bias2.pickle", "wb")
                 pickle.dump(bias2, pickle_out)
                 pickle_out.close()
                 print("model updated")

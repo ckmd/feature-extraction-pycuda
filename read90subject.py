@@ -11,7 +11,9 @@ data = []
 label = []
 name = []
 # read several image
-for i in range(1):
+for i in range(90):
+    if(i == 79):
+        continue
     print("read data : ",numpy.round(float(i)/89*100,2),'%')
     img_dir = "dataset/90subject-Cleaned/Subject" + str(i+1) # Enter Directory of all images 
     types = ('*.jpg','*.Jpg')

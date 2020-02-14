@@ -9,7 +9,7 @@ from datetime import datetime
 from pykafka import KafkaClient
 
 client = KafkaClient(hosts="localhost:9092")
-topic = client.topics['bustopic3']
+topic = client.topics['bustopic11']
 producer = topic.get_sync_producer()
 # kafka needed
 
@@ -97,18 +97,21 @@ print("Hellocuda")
 # cap = cv2.VideoCapture(0)
 x,y = 480,360
 
+numpy.seterr(divide = 'ignore', invalid = 'ignore')
 subject90 = r90.data
 label90 = r90.label
+name90 = r90.name
 # realtime
 # while True:
 #     _,cam = cap.read()
 #     cam = cv2.flip(cam,1)
 #     frame = cv2.resize(cam,(x,y))
 #     grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+numpy.random.seed(1)
 for s in range(len(subject90)):
     start = time.time()
     ri = numpy.random.randint(len(subject90))
-    frame = subject90[s]
+    frame = subject90[ri]
     grey = frame
     faces = face_detector(grey)
     for face in faces:
@@ -146,8 +149,8 @@ for s in range(len(subject90)):
           a17 = numpy.concatenate(all_area17).ravel().astype(numpy.float32)
           a9 = numpy.concatenate(all_area9).ravel().astype(numpy.float32)
           a5 = numpy.concatenate(all_area5).ravel().astype(numpy.float32)
-          cv2.imshow("landmark",frame[20:y-20,20:x-20])
-          cv2.waitKey(1)
+          # cv2.imshow("landmark",frame[20:y-20,20:x-20])
+          # cv2.waitKey(1)
           current = time.time()
           # print("landmark ", current - start, "ms")
 
@@ -186,18 +189,18 @@ for s in range(len(subject90)):
           # Normalisasi ke 0 dan 1 sebelum masuk ke NN
           normalize = ((featureall - numpy.amin(featureall)) * 1) / ( numpy.amax(featureall) - numpy.amin(featureall))
           # print(numpy.max(normalize), numpy.min(normalize))
-          
+          # print(name90[s], numpy.amin(featureall), numpy.amax(featureall))
           # convert to string before to dictionary
           normalize = normalize.astype('str')
           # convert dari numpy ke dictionary
-          print(normalize.shape, label90[s].shape)
           jsonall = dict(enumerate(normalize,1))
-          labelall = dict(enumerate(label90[s],1))
+          labelall = dict(enumerate(label90[ri],1))
           # stream the data using kafka
           stream(jsonall, labelall)
 
           end = time.time()
-          print('all time : ',end - start, 'ms')
+          print('progress : ',float(s)/len(subject90)*100, ' %')
+          # print('all time : ',end - start, ' ms')
           waktu.append(end-start)
     # realtime
     # cv2.imshow("camera",cam)
