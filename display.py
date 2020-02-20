@@ -43,6 +43,7 @@ def generate():
             cap.release()
             cv2.destroyAllWindows()
             break
+    
 
 @app.route('/video_feed')
 def video_feed():
@@ -55,12 +56,14 @@ def registrasi_stream():
 @app.route('/SomeFunction')
 def SomeFunction():
     global cap
-    ret,img = cap.read()
-    cv2.imwrite(filename='saved_img.jpg', img=img)
-    cap.release()
-    print('Captured')
-    return 'captu'
-        # break
+    print(cap)
+    if(cap.isOpened()):
+        ret,img = cap.read()
+        img = cv2.flip(img,1)
+        cv2.imwrite(filename='saved_img.jpg', img=img)
+        cap.release()
+        print(cap)
+    return 'capture'
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
