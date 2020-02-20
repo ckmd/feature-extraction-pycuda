@@ -12,6 +12,7 @@ print(c.execute("SELECT * FROM example"))
 # c.close()
 # conn.close()
 app = Flask(__name__)
+cap = cv2.VideoCapture(0).release()
 
 @app.route('/')
 def home():
@@ -19,7 +20,7 @@ def home():
 
 @app.route('/registrasi')
 def registrasi():
-    return 'halaman registrasi'
+    return render_template("registrasi.html")
 
 @app.route('/log')
 def log():
@@ -27,25 +28,39 @@ def log():
 
 @app.route('/list')
 def list():
-    recording()
     return 'halaman list'
 
 def generate():
+    global cap
     cap = cv2.VideoCapture(0)
     while(cap.isOpened()):
         ret,img = cap.read()
         if(ret == True):
             img = cv2.flip(img,1)
-        #     img = cv2.resize(img,(480,360))
             frame = cv2.imencode(".jpg", img)[1].tobytes()
             yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        #     time.sleep(0.1)
         else:
+            cap.release()
+            cv2.destroyAllWindows()
             break
 
 @app.route('/video_feed')
 def video_feed():
     return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
 
+@app.route('/registrasi_stream')
+def registrasi_stream():
+    return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
+
+@app.route('/SomeFunction')
+def SomeFunction():
+    global cap
+    ret,img = cap.read()
+    cv2.imwrite(filename='saved_img.jpg', img=img)
+    cap.release()
+    print('Captured')
+    return 'captu'
+        # break
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
