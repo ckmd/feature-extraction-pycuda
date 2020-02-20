@@ -1,5 +1,5 @@
-from flask import Flask, Response, render_template, make_response
-import cv2, time, threading
+from flask import Flask, session, Response, redirect, render_template, make_response, request, url_for, escape
+import cv2, time, threading, os, sys
 from dbconnect import connection
 c, conn = connection()
 
@@ -13,22 +13,49 @@ print(c.execute("SELECT * FROM example"))
 # conn.close()
 app = Flask(__name__)
 cap = cv2.VideoCapture(0).release()
+app.secret_key = '123'
 
 @app.route('/')
 def home():
-    return render_template("index.html")
+    if 'username' in session:
+      username = session['username']
+      return render_template("index.html", ses = escape(username))
+    return "You are not set current user <br><a href = '/login'></b>" + \
+    "click here to log in</b></a>"
+# app.add_url_rule('/','/home',home)
+
+@app.route('/login', methods = ['GET', 'POST'])
+def login():
+   if request.method == 'POST':
+      session['username'] = request.form['username']
+      return redirect(url_for('home'))
+   if 'username' in session:
+      return redirect(url_for('home'))
+   return render_template("login.html")
+
+@app.route('/logout')
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 @app.route('/registrasi')
 def registrasi():
-    return render_template("registrasi.html")
+    return render_template("registrasi.html", ses = escape(session['username']))
 
 @app.route('/log')
 def log():
     return 'halaman log'
 
-@app.route('/list')
-def list():
-    return 'halaman list'
+@app.route('/user')
+def user():
+    return 'All Registerede User'
+
+# untuk melihat detail tiap user
+@app.route('/user/<int:userID>')
+def userdetail(userID):
+    # return 'hi user id : %d ' % userID
+    return render_template("detailUser.html", uid = userID)
 
 def generate():
     global cap
@@ -53,8 +80,8 @@ def video_feed():
 def registrasi_stream():
     return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
 
-@app.route('/SomeFunction')
-def SomeFunction():
+@app.route('/capture')
+def capture():
     global cap
     print(cap)
     if(cap.isOpened()):
@@ -62,7 +89,7 @@ def SomeFunction():
         img = cv2.flip(img,1)
         cv2.imwrite(filename='saved_img.jpg', img=img)
         cap.release()
-        print(cap)
+        print(session['username'])
     return 'capture'
 
 if __name__ == '__main__':
