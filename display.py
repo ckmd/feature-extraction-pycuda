@@ -14,6 +14,7 @@ print(c.execute("SELECT * FROM example"))
 app = Flask(__name__)
 cap = cv2.VideoCapture(0).release()
 app.secret_key = '123'
+# usname = escape(session['username'])
 
 @app.route('/')
 def home():
@@ -41,7 +42,7 @@ def logout():
 
 @app.route('/registrasi')
 def registrasi():
-    return render_template("registrasi.html", ses = escape(session['username']))
+    return render_template("registrasi.html", ses = escape(session['username']), pose = 20)
 
 @app.route('/log')
 def log():
@@ -80,16 +81,19 @@ def video_feed():
 def registrasi_stream():
     return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
 
-@app.route('/capture')
-def capture():
+@app.route('/capture<pose>')
+def capture(pose):
     global cap
-    print(cap)
+    print(pose)
+    usname = escape(session['username'])
     if(cap.isOpened()):
         ret,img = cap.read()
         img = cv2.flip(img,1)
-        cv2.imwrite(filename='saved_img.jpg', img=img)
+        if not os.path.exists('/home/er2c-jetson-nano/registered/'+usname):
+            print("buat folder "+usname)
+            os.makedirs('registered/'+usname)
+        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_'+pose+'.jpg', img=img)
         cap.release()
-        print(session['username'])
     return 'capture'
 
 if __name__ == '__main__':
