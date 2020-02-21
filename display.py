@@ -84,7 +84,6 @@ def registrasi_stream():
 @app.route('/capture<pose>')
 def capture(pose):
     global cap
-    print(pose)
     usname = escape(session['username'])
     if(cap.isOpened()):
         ret,img = cap.read()
