@@ -4,27 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
     <title>Registrasi</title>
 </head>
 <body>
-    <h3>Halaman Registrasi</h3>
-    <h3>Current User : {{ses}}</h3>
-    <b><a href = '/logout'>click here to change active user</a></b><br>
-    <select onchange="changepose()" id="selectpose">
-        <option selected="selected">pilih pose</option>
-        <option value="-45">-45 degrees</option>
-        <option value="-30">-30 degrees</option>
-        <option value="-15">-15 degrees</option>
-        <option value="0">0 degrees</option>
-        <option value="+15">+15 degrees</option>
-        <option value="+30">+30 degrees</option>
-        <option value="+45">+45 degrees</option>
-    </select>
-    <p id="selectedpose">select pose above</p> <br>
-    <img src="{{ url_for('registrasi_stream') }}"><br>
-    <button id="mybutton" type="button">Capture</button>
-    <button onClick="window.location.reload();">Re-capture Image</button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="https://upload.wikimedia.org/wikipedia/id/4/44/Logo_PENS.png" width="40" height="40" class="d-inline-block align-top" alt="">
+                Politeknik Elektronika Negeri Surabaya
+        </a>
+        <div class="collapse navbar-collapse nav justify-content-end" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="/registrasi">Registration</a>
+                <a class="nav-item nav-link" href="/recognizing">Recognizing</a>
+                <a class="nav-item nav-link" href="/user">Registered User</a>
+                <a class="nav-item nav-link" href="/log">Log</a>
+                <a class="nav-item nav-link" href="/logout">Change Active User</a>
+            </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container p-3 my-3 border">
+        <h1>Registration Page</h1>
+        <div class="row">
+            <div class="col-8">
+                <img src="{{ url_for('registrasi_stream') }}"><br>
+            </div>
+            <div class="col-4">
+                <h3>Current user : {{ses}}</h3>
+                <div class="btn-group dropright">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Dropright
+                    </button>
+                    <div class="dropdown-menu">
+                        <!-- Dropdown menu links -->
+                    </div>
+                </div>
+                <select onchange="changepose()" id="selectpose">
+                    <option selected="selected">pilih pose</option>
+                    <option value="-45">-45 degrees</option>
+                    <option value="-30">-30 degrees</option>
+                    <option value="-15">-15 degrees</option>
+                    <option value="0">0 degrees</option>
+                    <option value="+15">+15 degrees</option>
+                    <option value="+30">+30 degrees</option>
+                    <option value="+45">+45 degrees</option>
+                </select>
+                <p id="selectedpose">select pose above</p> <br>
+                <button id="mybutton" type="button">Capture</button>
+                <button onClick="window.location.reload();">Re-capture Image</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 <script type="text/javascript">
     var pose = 0;

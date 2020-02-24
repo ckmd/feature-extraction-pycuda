@@ -1,6 +1,7 @@
 from flask import Flask, session, Response, redirect, render_template, make_response, request, url_for, escape
 import cv2, time, threading, os, sys
 from dbconnect import connection
+from flask_bootstrap import Bootstrap
 c, conn = connection()
 
 print(c.execute("SELECT * FROM example"))
@@ -12,6 +13,7 @@ print(c.execute("SELECT * FROM example"))
 # c.close()
 # conn.close()
 app = Flask(__name__)
+# Bootstrap(app)
 cap = cv2.VideoCapture(0).release()
 app.secret_key = '123'
 # usname = escape(session['username'])
@@ -21,9 +23,10 @@ def home():
     if 'username' in session:
       username = session['username']
       return render_template("index.html", ses = escape(username))
-    return "You are not set current user <br><a href = '/login'></b>" + \
-    "click here to log in</b></a>"
-# app.add_url_rule('/','/home',home)
+    return render_template("login.html")
+#     "You are not set current user <br><a href = '/login'></b>" + \
+#     "click here to log in</b></a>"
+# # app.add_url_rule('/','/home',home)
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -47,6 +50,10 @@ def registrasi():
 @app.route('/log')
 def log():
     return 'halaman log'
+
+@app.route('/recognizing')
+def recognizing():
+    return 'halaman Recognizing'
 
 @app.route('/user')
 def user():

@@ -4,12 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <title>Set user</title>
 </head>
 <body>
-    <form action = "" method = "post">
-        <p><input type = "text" name = "username"></p>
-        <p><input type = "submit" value = "Set User"></p>
-    </form>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="https://upload.wikimedia.org/wikipedia/id/4/44/Logo_PENS.png" width="40" height="40" class="d-inline-block align-top" alt="">
+                Politeknik Elektronika Negeri Surabaya
+        </a>
+        <div class="collapse navbar-collapse nav justify-content-end" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="/registrasi">Registration</a>
+                <a class="nav-item nav-link" href="/recognizing">Recognizing</a>
+                <a class="nav-item nav-link" href="/user">Registered User</a>
+                <a class="nav-item nav-link" href="/log">Log</a>
+                <a class="nav-item nav-link" href="/logout">Change Active User</a>
+            </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container p-3 my-3 border">
+        <h1>Login Page</h1>
+        <hp>You are not set current user, login to set current user</p>
+        <form action = "/login" method = "POST">
+            <p><input type = "text" name = "username"></p>
+            <p><input class="btn-primary" type = "submit" value = "Set User"></p>
+        </form>
+    </div>
 </body>
 </html>
