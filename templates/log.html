@@ -16,34 +16,41 @@
         </a>
         <div class="collapse navbar-collapse nav justify-content-end" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-item nav-link active" href="/">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                 <a class="nav-item nav-link" href="/registrasi">Registration</a>
                 <a class="nav-item nav-link" href="/recognizing">Recognizing</a>
                 <a class="nav-item nav-link" href="/user">Registered User</a>
-                <a class="nav-item nav-link" href="/log">Log</a>
+                <a class="nav-item nav-link active" href="/log">Log</a>
                 <a class="nav-item nav-link" href="/logout">Change Active User</a>
             </div>
             </div>
         </div>
     </nav>
     <div class="container p-3 my-3 border">
-        <h1>log recognition</h1>
+        <h1>Log Recognition</h1>
         <div class="row">
-            <div class="col-8">
-                <table class="table-bordered">
-                    <thead></thead>
-                    <tbody>
-                        {% for u in users %}
+            <div class="col-12">
+                <table class="table table-hover">
+                    <caption>Total {{totallog}} Recorded Log</caption>
+                    <thead>
                         <tr>
-                            <td>{{u[0]}}</td>
+                            <th>Log ID</th>
+                            <th>Detected Person</th>
+                            <th>Jetson Location</th>
+                            <th>Recorded Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in logs %}
+                        <tr>
+                            <th scope="row">{{u[0]}}</th>
                             <td>{{u[1]}}</td>
                             <td>{{u[2]}}</td>
+                            <td>{{u[3]}}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-            <div class="col-4">
             </div>
         </div>
     </div>

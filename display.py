@@ -2,15 +2,20 @@ from flask import Flask, session, Response, redirect, render_template, make_resp
 import cv2, time, threading, os, sys
 from dbconnect import connection
 from flask_bootstrap import Bootstrap
+from datetime import datetime
 c, conn = connection()
 
-print(c.execute("SELECT * FROM example"))
-# sql = "INSERT INTO example (id,data) VALUES (%s,%s)"
-# val = [(6,"hi"),(7,"hi")]
+rec = datetime.now().replace(microsecond=0)
+# print(c.execute("SELECT * FROM example"))
+# sql = "INSERT INTO log (id,user_id,jetson_id, recorded_time) VALUES (%s,%s,%s,%s)"
+# sql = "INSERT INTO jetson (id,location) VALUES (1,'gate 1')"
+# val = (1,1,1,rec)
 # c.executemany(sql, val)
+# c.execute(sql)
 # conn.commit()
 # c.close()
 # conn.close()
+# exit()
 app = Flask(__name__)
 # Bootstrap(app)
 cap = cv2.VideoCapture(0).release()
@@ -48,7 +53,10 @@ def registrasi():
 
 @app.route('/log')
 def log():
-    return render_template("log.html")
+    c.execute("SELECT l.id, u.nama, j.location, l.recorded_time FROM log l INNER JOIN user u ON l.user_id = u.id INNER JOIN jetson j ON l.jetson_id = j.id")
+    logget = c.fetchall()
+    totlog = c.execute("SELECT * FROM log")
+    return render_template("log.html", logs = logget, totallog = totlog)
 
 @app.route('/recognizing')
 def recognizing():
@@ -58,7 +66,8 @@ def recognizing():
 def user():
     c.execute("SELECT id, nama, nrp FROM user")
     userget = c.fetchall()
-    return render_template("user.html", users = userget)
+    totuser = c.execute("SELECT * FROM user")
+    return render_template("user.html", users = userget, totaluser = totuser)
 
 # untuk melihat detail tiap user
 @app.route('/user/<int:userID>')
