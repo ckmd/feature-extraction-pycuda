@@ -17,7 +17,7 @@
         </a>
         <div class="collapse navbar-collapse nav justify-content-end" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link active" href="/">Home <span class="sr-only">(current)</span></a>
                 <a class="nav-item nav-link" href="/registrasi">Registration</a>
                 <a class="nav-item nav-link" href="/recognizing">Recognizing</a>
                 <a class="nav-item nav-link" href="/user">Registered User</a>
@@ -31,31 +31,26 @@
         <h1>Registration Page</h1>
         <div class="row">
             <div class="col-8">
-                <img src="{{ url_for('registrasi_stream') }}"><br>
+                <img src="{{ url_for('registrasi_stream') }}" width="100%" height="100%"><br>
             </div>
             <div class="col-4">
-                <h3>Current user : {{ses}}</h3>
-                <div class="btn-group dropright">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Dropright
-                    </button>
-                    <div class="dropdown-menu">
-                        <!-- Dropdown menu links -->
-                    </div>
+                <div class="form-group col-md-12">
+                    <h4>Current user : {{ses}}</h4>
+                    <label for="selectpose">Select Pose Below</label>
+                    <select onchange="changepose()" id="selectpose" class="custom-select custom-select-lg mb-3">
+                        <option selected="selected">pilih pose</option>
+                        <option value="-45">-45 degrees</option>
+                        <option value="-30">-30 degrees</option>
+                        <option value="-15">-15 degrees</option>
+                        <option value="0">0 degrees</option>
+                        <option value="+15">+15 degrees</option>
+                        <option value="+30">+30 degrees</option>
+                        <option value="+45">+45 degrees</option>
+                    </select>
+                    <button class="btn btn-primary" id="mybutton" type="button">Capture</button>
+                    
+                    <button class="btn btn-secondary" onClick="window.location.reload();">Re-capture Image</button>
                 </div>
-                <select onchange="changepose()" id="selectpose">
-                    <option selected="selected">pilih pose</option>
-                    <option value="-45">-45 degrees</option>
-                    <option value="-30">-30 degrees</option>
-                    <option value="-15">-15 degrees</option>
-                    <option value="0">0 degrees</option>
-                    <option value="+15">+15 degrees</option>
-                    <option value="+30">+30 degrees</option>
-                    <option value="+45">+45 degrees</option>
-                </select>
-                <p id="selectedpose">select pose above</p> <br>
-                <button id="mybutton" type="button">Capture</button>
-                <button onClick="window.location.reload();">Re-capture Image</button>
             </div>
         </div>
     </div>

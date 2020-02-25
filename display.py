@@ -9,7 +9,6 @@ print(c.execute("SELECT * FROM example"))
 # val = [(6,"hi"),(7,"hi")]
 # c.executemany(sql, val)
 # conn.commit()
-# exit()
 # c.close()
 # conn.close()
 app = Flask(__name__)
@@ -49,15 +48,17 @@ def registrasi():
 
 @app.route('/log')
 def log():
-    return 'halaman log'
+    return render_template("log.html")
 
 @app.route('/recognizing')
 def recognizing():
-    return 'halaman Recognizing'
+    return render_template("recognizing.html")
 
 @app.route('/user')
 def user():
-    return 'All Registerede User'
+    c.execute("SELECT id, nama, nrp FROM user")
+    userget = c.fetchall()
+    return render_template("user.html", users = userget)
 
 # untuk melihat detail tiap user
 @app.route('/user/<int:userID>')
