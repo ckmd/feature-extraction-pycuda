@@ -99,7 +99,9 @@ def registrasi():
 
 @app.route('/log')
 def log():
-    c.execute("SELECT l.id, u.nama, j.location, l.recorded_time FROM log l INNER JOIN user u ON l.user_id = u.id INNER JOIN jetson j ON l.jetson_id = j.id")
+    # original query
+    # c.execute("SELECT l.id, u.nama, j.location, l.recorded_time FROM log l INNER JOIN user u ON l.user_id = u.id INNER JOIN jetson j ON l.jetson_id = j.id")
+    c.execute("SELECT l.id, l.user_id, j.location, l.recorded_time FROM log l INNER JOIN jetson j ON l.jetson_id = j.id")
     logget = c.fetchall()
     totlog = c.execute("SELECT * FROM log")
     return render_template("log.html", logs = logget, totallog = totlog)
@@ -160,11 +162,17 @@ def capture(pose):
     usname = escape(session['username'])
     if(cap.isOpened()):
         ret,img = cap.read()
+        ori = img
         img = cv2.flip(img,1)
         if not os.path.exists('/home/er2c-jetson-nano/registered/'+usname):
             print("buat folder "+usname)
             os.makedirs('registered/'+usname)
-        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_'+pose+'.jpg', img=img)
+        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_A_'+pose+'.jpg', img=img)
+        if(int(pose) < 0):
+          strpos = '+'+str(int(pose)*-1)
+        else:
+          strpos = str(int(pose)*-1)
+        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_B_'+strpos+'.jpg', img=ori)
         cap.release()
     return 'capture'
 

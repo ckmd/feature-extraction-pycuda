@@ -2,7 +2,7 @@ from pykafka import KafkaClient
 import json, pandas, pickle, numpy, time
 
 # print("Initializing ... ")
-topicname = 'bustopic11'
+topicname = 'traintopic2'
 client = KafkaClient(hosts='localhost:9092')
 consumer = client.topics[topicname].get_simple_consumer()
 
@@ -12,10 +12,10 @@ def sigmoid_der(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
 # load trained model
-weights = pickle.load(open("model/syn0.pickle", "rb"))
-weights2 = pickle.load(open("model/syn1.pickle", "rb"))
-bias = pickle.load(open("model/bias.pickle", "rb"))
-bias2 = pickle.load(open("model/bias2.pickle", "rb"))
+weights = pickle.load(open("model/2syn0.pickle", "rb"))
+weights2 = pickle.load(open("model/2syn1.pickle", "rb"))
+bias = pickle.load(open("model/2bias.pickle", "rb"))
+bias2 = pickle.load(open("model/2bias2.pickle", "rb"))
 
 # Defining Neural Network Synapse for the first time
 # numpy.random.seed(0)
@@ -74,19 +74,19 @@ while True:
             print('data ke : ',datake, 'acc : ',float(accuracy)/datake*100,'time : ',end-start)
             datake += 1
 
-            if(iterration < 600):
+            if(iterration < 1000):
                 iterration += 1
             else:
                 iterration = 1
                 print("updating model ...")
                 # Save Synapse / Model into Pickle
-                pickle_out = open("model/syn0.pickle", "wb")
+                pickle_out = open("model/2syn0.pickle", "wb")
                 pickle.dump(weights, pickle_out)
-                pickle_out = open("model/syn1.pickle", "wb")
+                pickle_out = open("model/2syn1.pickle", "wb")
                 pickle.dump(weights2, pickle_out)
-                pickle_out = open("model/bias.pickle", "wb")
+                pickle_out = open("model/2bias.pickle", "wb")
                 pickle.dump(bias, pickle_out)
-                pickle_out = open("model/bias2.pickle", "wb")
+                pickle_out = open("model/2bias2.pickle", "wb")
                 pickle.dump(bias2, pickle_out)
                 pickle_out.close()
                 print("model updated")

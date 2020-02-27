@@ -1,17 +1,16 @@
-from flask import Flask, session, Response, redirect, render_template, make_response, request, url_for, escape
 import cv2, numpy, dlib, os, time, Gabor, json
 import dlib.cuda as cuda
 import pycuda.autoinit
 import pycuda.driver as drv
-# import read90subject as r90
+import read90subject as r90
 
 # kafka needed
-# from datetime import datetime
-# from pykafka import KafkaClient
+from datetime import datetime
+from pykafka import KafkaClient
 
-# client = KafkaClient(hosts="localhost:9092")
-# topic = client.topics['bustopic11']
-# producer = topic.get_sync_producer()
+client = KafkaClient(hosts="localhost:9092")
+topic = client.topics['traintopic2']
+producer = topic.get_sync_producer()
 # kafka needed
 
 from pycuda.compiler import SourceModule
@@ -95,29 +94,27 @@ conv5 = mod.get_function("conv5")
 face_detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("Rachmad_ws/python/shape_predictor_68_face_landmarks.dat")
 print("Hellocuda")
-# cap = cv2.VideoCapture(0)
 x,y = 480,360
 
 numpy.seterr(divide = 'ignore', invalid = 'ignore')
-# subject90 = r90.data
-# label90 = r90.label
-# name90 = r90.name
+subject90 = r90.data
+label90 = r90.label
+name90 = r90.name
 # realtime
 def send():
-  global cap
-  cap = cv2.VideoCapture(0)
-  while(cap.isOpened()):
-      ret,cam = cap.read()
-      if(ret == True):
-        cam = cv2.flip(cam,1)
-        frame = cv2.resize(cam,(x,y))
-        grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # numpy.random.seed(1)
-    # for s in range(len(subject90)):
+  # cap = cv2.VideoCapture(0)
+  # while(cap.isOpened()):
+  #     ret,cam = cap.read()
+  #     if(ret == True):
+  #       cam = cv2.flip(cam,1)
+  #       frame = cv2.resize(cam,(x,y))
+  #       grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    numpy.random.seed(1)
+    for s in range(20 * len(subject90)):
         start = time.time()
-    #     ri = numpy.random.randint(len(subject90))
-    #     frame = subject90[ri]
-    #     grey = frame
+        ri = numpy.random.randint(len(subject90))
+        frame = subject90[ri]
+        grey = frame
         faces = face_detector(grey)
         for face in faces:
             all_area33 = []
@@ -134,7 +131,7 @@ def send():
               for i in range(0,68):
                   x0 = landmark.part(i).x
                   y0 = landmark.part(i).y
-                  cv2.circle(frame, (x0,y0), 1, (0,255,255),2)
+                  # cv2.circle(frame, (x0,y0), 1, (0,255,255),2)
 
                   # get sorround area of each single point
                   area33 = grey[y0-16:y0+17, x0-16:x0+17]/255.0
@@ -199,12 +196,9 @@ def send():
               normalize = normalize.astype('str')
               # convert dari numpy ke dictionary
               jsonall = dict(enumerate(normalize,1))
-              # labelall = dict(enumerate(label90[ri],1))
+              labelall = dict(enumerate(label90[ri],1))
               # stream the data using kafka
-              # stream(jsonall, labelall)
-
-              frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
-              yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+              stream(jsonall, labelall)
 
               # end = time.time()
               # print('progress : ',float(s)/len(subject90)*100, ' %')
@@ -213,9 +207,9 @@ def send():
         # realtime
         # cv2.imshow("camera",cam)
         # cv2.waitKey(1)
-      else:
-        cap.release()
-        cv2.destroyAllWindows()
-        break
-print("stream begin")
+      # else:
+      #   cap.release()
+      #   cv2.destroyAllWindows()
+      #   break
+print("Train begin")
 send()
