@@ -1,10 +1,29 @@
 from flask import Flask, session, Response, redirect, render_template, make_response, request, url_for, escape
-import cv2, time, threading, os, sys, numpy, dlib, Gabor
+import cv2, time, threading, os, sys, numpy, dlib, Gabor, json
 from dbconnect import connection
 from flask_bootstrap import Bootstrap
 from datetime import datetime
 # import pycuda.autoinit
 import pycuda.driver as cuda
+
+# kafka needed
+from datetime import datetime
+from pykafka import KafkaClient
+
+client = KafkaClient(hosts="localhost:9092")
+topic = client.topics['matchtopic1']
+producer = topic.get_sync_producer()
+# kafka needed
+
+data = {}
+data['jetsonid'] = '001'
+data['features'] = {}
+def stream(features):
+  data['timestamp'] = str(datetime.now().replace(microsecond=0))
+  for dol in range(len(features)):
+      data['features'][dol+1] = features[dol+1]
+  message = json.dumps(data)
+  producer.produce(message.encode('ascii'))
 
 c, conn = connection()
 rec = datetime.now().replace(microsecond=0)
@@ -269,7 +288,7 @@ def matching():
               # convert dari numpy ke dictionary
               jsonall = dict(enumerate(normalize,1))
               # stream the data using kafka
-              # stream(jsonall)
+              stream(jsonall)
 
               frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
