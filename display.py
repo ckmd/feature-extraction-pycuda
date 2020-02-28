@@ -11,7 +11,7 @@ from datetime import datetime
 from pykafka import KafkaClient
 
 client = KafkaClient(hosts="localhost:9092")
-topic = client.topics['matchtopic1']
+topic = client.topics['match5']
 producer = topic.get_sync_producer()
 # kafka needed
 

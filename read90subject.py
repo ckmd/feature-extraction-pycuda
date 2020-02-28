@@ -2,7 +2,8 @@ import cv2, os, glob, re, time, numpy
 
 start = time.time()
 def splitstring(word):
-    label = numpy.zeros(90)
+    # label = numpy.zeros(90)
+    label = numpy.zeros(5)
     personId = int(word[2:4])
     label[personId-1] = 1
     return label
@@ -11,11 +12,11 @@ data = []
 label = []
 name = []
 # read several image
-for i in range(90):
+for i in range(5):
     # if(i == 79):
     #     continue
-    print("read data : ",numpy.round(float(i)/89*100,2),'%')
-    img_dir = "dataset/90subject-Cleaned/Subject" + str(i+1) # Enter Directory of all images 
+    print("read data : ",numpy.round(float(i+1)/5*100,2),'%')
+    img_dir = "dataset/5subject/Subject" + str(i+1) # Enter Directory of all images 
     types = ('*.jpg','*.Jpg')
     files = []
     for f in types:
@@ -27,8 +28,6 @@ for i in range(90):
         base = os.path.splitext(base)
         degree = base[0][5:]
         if(degree == '0' or degree == '+15' or degree == '-15' or degree == '+30' or degree == '-30' or degree == '+45' or degree == '-45'):
-            if(i==79):
-                print(base[0])
             title = splitstring(base[0])
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             image = cv2.resize(image,(480,360))

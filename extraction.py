@@ -9,7 +9,7 @@ from datetime import datetime
 from pykafka import KafkaClient
 
 client = KafkaClient(hosts="localhost:9092")
-topic = client.topics['traintopic2']
+topic = client.topics['train5']
 producer = topic.get_sync_producer()
 # kafka needed
 
@@ -60,7 +60,7 @@ def stream(features, label):
   data['timestamp'] = str(datetime.utcnow())
   for dol in range(len(features)):
       data['features'][dol+1] = features[dol+1]
-      if(dol < 90):
+      if(dol < 5):
         data['label'][dol+1] = label[dol+1]
   message = json.dumps(data)
   producer.produce(message.encode('ascii'))
@@ -110,7 +110,7 @@ def send():
   #       frame = cv2.resize(cam,(x,y))
   #       grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     numpy.random.seed(1)
-    for s in range(20 * len(subject90)):
+    for s in range(50 * len(subject90)):
         start = time.time()
         ri = numpy.random.randint(len(subject90))
         frame = subject90[ri]
