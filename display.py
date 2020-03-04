@@ -10,9 +10,9 @@ import pycuda.driver as cuda
 from datetime import datetime
 from pykafka import KafkaClient
 
-client = KafkaClient(hosts="localhost:9092")
-topic = client.topics['match5']
-producer = topic.get_sync_producer()
+# client = KafkaClient(hosts="localhost:9092")
+# topic = client.topics['match5']
+# producer = topic.get_sync_producer()
 # kafka needed
 
 data = {}
@@ -67,6 +67,9 @@ r5i = numpy.zeros_like(f5i)
 
 @app.route('/')
 def home():
+    global cap
+    if(cap is not None):
+      cap.release()
     if 'username' in session:
       username = session['username']
       return render_template("index.html", ses = escape(username))
@@ -94,11 +97,17 @@ def logout():
 def registrasi():
     if 'username' in session:
       username = session['username']
-      return render_template("registrasi.html", ses = escape(username), pose = 20)
+      if 'sesicapture' in session:
+        return render_template("registrasi.html", ses = escape(username), sesi = escape(session['sesicapture']))
+      else:
+        return render_template("registrasi.html", ses = escape(username), sesi = 1)
     return render_template("login.html")
 
 @app.route('/log')
 def log():
+    global cap
+    if(cap is not None):
+      cap.release()
     # original query
     # c.execute("SELECT l.id, u.nama, j.location, l.recorded_time FROM log l INNER JOIN user u ON l.user_id = u.id INNER JOIN jetson j ON l.jetson_id = j.id")
     c.execute("SELECT l.id, l.user_id, j.location, l.recorded_time FROM log l INNER JOIN jetson j ON l.jetson_id = j.id")
@@ -112,6 +121,9 @@ def recognizing():
 
 @app.route('/user')
 def user():
+    global cap
+    if(cap is not None):
+      cap.release()
     c.execute("SELECT id, nama, nrp FROM user")
     userget = c.fetchall()
     totuser = c.execute("SELECT * FROM user")
@@ -156,8 +168,10 @@ def registrasi_stream():
       cap.release()
     return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
 
-@app.route('/capture<pose>')
-def capture(pose):
+@app.route('/capture/<sesi>/<pose>')
+def capture(pose,sesi):
+    # tambahkan session di sini
+    session['sesicapture'] = sesi
     global cap
     usname = escape(session['username'])
     if(cap.isOpened()):
@@ -296,7 +310,7 @@ def matching():
               # convert dari numpy ke dictionary
               jsonall = dict(enumerate(normalize,1))
               # stream the data using kafka
-              stream(jsonall)
+              # stream(jsonall)
 
               frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')

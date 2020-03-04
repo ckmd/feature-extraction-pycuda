@@ -36,6 +36,14 @@
             <div class="col-4">
                 <div class="form-group col-md-12">
                     <h4>Current user : {{ses}}</h4>
+                    <label for="selectsesi">Capture Session </label>
+                    <select onchange="changesesi()" id="selectsesi" class="custom-select custom-select-lg mb-3">
+                        <option value="{{sesi}}" selected="selected">current sesi : {{sesi}}</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                    <!-- <p id="selectedsesi">{{sesi}}</p> -->
                     <label for="selectpose">Select Pose Below</label>
                     <select onchange="changepose()" id="selectpose" class="custom-select custom-select-lg mb-3">
                         <option selected="selected">pilih pose</option>
@@ -59,18 +67,23 @@
 </body>
 <script type="text/javascript">
     var pose = 0;
+    var sesi = 1;
     // document.getElementById("pose").innerHTML = pose;
     $(function() {
         // var pose = document.getElementById("pose").innerHTML;
         $("#mybutton").click(function (event) { 
-            $.getJSON('/capture'+pose, { }, 
+            $.getJSON('/capture/'+sesi+'/'+pose, { }, 
             function(data) { }); 
             return false; 
         }); 
     });
     function changepose(){
         pose = document.getElementById("selectpose").value;
-        document.getElementById("selectedpose").innerHTML = ("current pose : "+pose);
+        // document.getElementById("selectedpose").innerHTML = ("current pose : "+pose);
+    };
+    function changesesi(){
+        sesi = document.getElementById("selectsesi").value;
+        // document.getElementById("selectedsesi").innerHTML = ("current sesi : "+sesi);
     };
 </script>
 </html>

@@ -4,7 +4,7 @@ from dbconnect import connection
 
 print("Initializing ... ")
 topicname = 'match5'
-client = KafkaClient(hosts='localhost:9092')
+client = KafkaClient(hosts='202.9.76.198:9092')
 consumer = client.topics[topicname].get_simple_consumer()
 c, conn = connection()
 
