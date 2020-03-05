@@ -72,6 +72,7 @@
     $(function() {
         // var pose = document.getElementById("pose").innerHTML;
         $("#mybutton").click(function (event) { 
+            sesi = document.getElementById("selectsesi").value;
             $.getJSON('/capture/'+sesi+'/'+pose, { }, 
             function(data) { }); 
             return false; 

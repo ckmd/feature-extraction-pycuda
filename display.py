@@ -171,7 +171,19 @@ def registrasi_stream():
 @app.route('/capture/<sesi>/<pose>')
 def capture(pose,sesi):
     # tambahkan session di sini
+    code1 = 0
+    code2 = 0
     session['sesicapture'] = sesi
+    if(int(sesi) == 1):
+      code1 = 'A'
+      code2 = 'B'
+    elif(int(sesi) == 2):
+      code1 = 'C'
+      code2 = 'D'
+    elif(int(sesi) == 3):
+      code1 = 'E'
+      code2 = 'F'
+
     global cap
     usname = escape(session['username'])
     if(cap.isOpened()):
@@ -181,12 +193,12 @@ def capture(pose,sesi):
         if not os.path.exists('/home/er2c-jetson-nano/registered/'+usname):
             print("buat folder "+usname)
             os.makedirs('registered/'+usname)
-        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_A_'+pose+'.jpg', img=img)
+        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_'+code1+'_'+pose+'.jpg', img=img)
         if(int(pose) < 0):
           strpos = '+'+str(int(pose)*-1)
         else:
           strpos = str(int(pose)*-1)
-        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_B_'+strpos+'.jpg', img=ori)
+        cv2.imwrite(filename='registered/'+usname+'/'+usname+'_'+code2+'_'+strpos+'.jpg', img=ori)
         cap.release()
     return 'capture'
 
