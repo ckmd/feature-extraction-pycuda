@@ -10,9 +10,9 @@ import pycuda.driver as cuda
 from datetime import datetime
 from pykafka import KafkaClient
 
-# client = KafkaClient(hosts="localhost:9092")
-# topic = client.topics['match5']
-# producer = topic.get_sync_producer()
+client = KafkaClient(hosts="202.46.4.52:9092")
+topic = client.topics['rachmad1']
+producer = topic.get_sync_producer()
 # kafka needed
 
 data = {}
@@ -322,7 +322,7 @@ def matching():
               # convert dari numpy ke dictionary
               jsonall = dict(enumerate(normalize,1))
               # stream the data using kafka
-              # stream(jsonall)
+              stream(jsonall)
 
               frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
               yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')

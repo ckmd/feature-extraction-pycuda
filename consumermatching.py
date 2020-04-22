@@ -3,8 +3,9 @@ import json, pandas, pickle, numpy, time
 from dbconnect import connection
 
 print("Initializing ... ")
-topicname = 'match5'
-client = KafkaClient(hosts='202.9.76.198:9092')
+topicname = 'rachmad1'
+# client = KafkaClient(hosts='202.9.76.198:9092') server vietnam
+client = KafkaClient(hosts='202.46.4.52:9092') # mata elang
 consumer = client.topics[topicname].get_simple_consumer()
 c, conn = connection()
 

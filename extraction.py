@@ -9,7 +9,7 @@ from datetime import datetime
 from pykafka import KafkaClient
 
 client = KafkaClient(hosts="202.9.76.198:9092")
-topic = client.topics['train5']
+topic = client.topics['rachmad1']
 producer = topic.get_sync_producer()
 # kafka needed
 

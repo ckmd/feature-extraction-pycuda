@@ -2,8 +2,8 @@ from pykafka import KafkaClient
 import json, pandas, pickle, numpy, time
 
 # print("Initializing ... ")
-topicname = 'train5'
-client = KafkaClient(hosts='localhost:9092')
+topicname = 'rachmad1'
+client = KafkaClient(hosts='202.46.4.52:9092')
 consumer = client.topics[topicname].get_simple_consumer()
 
 def sigmoid(x):
