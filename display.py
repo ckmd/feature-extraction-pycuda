@@ -244,8 +244,9 @@ def matching():
       ret,cam = cap.read()
       if(ret == True):
         cam = cv2.flip(cam,1)
-        forNormalize = cv2.resize(cam,(x,y))
-        frame = forNormalize
+        frame = cv2.resize(cam,(x,y))
+        print(cam.shape)
+        print(frame.shape)
         grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # numpy.random.seed(1)
     # for s in range(len(subject90)):
@@ -266,14 +267,10 @@ def matching():
             boundary = (y2-y1)/2L
             if(x1 > boundary and y1 > boundary and x2 < (x-boundary) and (y2 < y-boundary)):
               face_area = grey[y1-boundary:y2+boundary, x1-boundary:x2+boundary]
-              print(face_area.shape)
               face_area = cv2.resize(face_area,(250,250))
-              # face_area_bw = cv2.cvtColor(face_area,cv2.COLOR_BGR2GRAY)
               normal_faces = face_detector(face_area)
               for n_face in normal_faces:
-
                 landmark = predictor(face_area, n_face)
-
                 for i in range(0,68):
                     x0 = landmark.part(i).x
                     y0 = landmark.part(i).y
