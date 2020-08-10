@@ -13,7 +13,7 @@ from pykafka import KafkaClient
 client = KafkaClient(hosts="192.168.8.5:9092")
 # client = KafkaClient(hosts="localhost:9092")
 # topic = client.topics['matasaka']
-topic = client.topics['train59']
+topic = client.topics['normalize0']
 producer = topic.get_sync_producer()
 # kafka needed
 
@@ -45,7 +45,7 @@ app = Flask(__name__)
 # Bootstrap(app)
 cap = cv2.VideoCapture(0).release()
 app.secret_key = '123'
-face_detector = dlib.get_frontal_face_detector()
+face_detector = dlib.get_frontal_face_detector() # dlib frontal face detector
 predictor = dlib.shape_predictor("Rachmad_ws/python/shape_predictor_68_face_landmarks.dat")
 print("Hellocuda")
 x,y = 480,360
@@ -145,7 +145,6 @@ def generate():
     while(cap.isOpened()):
         ret,img = cap.read()
         if(ret == True):
-            # img = cv2.flip(img,-1)
             img = cv2.flip(img,1)
             grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             faces = face_detector(grey)
@@ -245,7 +244,8 @@ def matching():
       ret,cam = cap.read()
       if(ret == True):
         cam = cv2.flip(cam,1)
-        frame = cv2.resize(cam,(x,y))
+        forNormalize = cv2.resize(cam,(x,y))
+        frame = forNormalize
         grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # numpy.random.seed(1)
     # for s in range(len(subject90)):
@@ -263,95 +263,104 @@ def matching():
             y1 = face.top()
             x2 = face.right()
             y2 = face.bottom()
-            cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,255),4)
-            # landmark = predictor(grey, face)
-            if(x1 > limit and y1 > limit and x2 < (x-limit) and (y2 < y-3*limit)):
-              landmark = predictor(grey, face)
-              cv2.rectangle(frame, (20,20), (x-limit,y-3*limit), (0,255,255),4)
-              for i in range(0,68):
-                  x0 = landmark.part(i).x
-                  y0 = landmark.part(i).y
-                  cv2.circle(frame, (x0,y0), 1, (0,255,255),2)
+            boundary = (y2-y1)/2L
+            if(x1 > boundary and y1 > boundary and x2 < (x-boundary) and (y2 < y-boundary)):
+              face_area = grey[y1-boundary:y2+boundary, x1-boundary:x2+boundary]
+              print(face_area.shape)
+              face_area = cv2.resize(face_area,(250,250))
+              # face_area_bw = cv2.cvtColor(face_area,cv2.COLOR_BGR2GRAY)
+              normal_faces = face_detector(face_area)
+              for n_face in normal_faces:
 
-                  # get sorround area of each single point
-                  # area33 = grey[y0-16:y0+17, x0-16:x0+17]/255.0
-                  area17 = grey[y0-8:y0+9, x0-8:x0+9]/255.0
-                  area9 = grey[y0-4:y0+5, x0-4:x0+5]/255.0
-                  area5 = grey[y0-2:y0+3, x0-2:x0+3]/255.0
+                landmark = predictor(face_area, n_face)
 
-                  # multiply each sorround area 4 times for same with filter for 4 orientation convolution
-                  for dup in range(4):
-                      # all_area33.append(area33)
-                      all_area17.append(area17)
-                      all_area9.append(area9)
-                      all_area5.append(area5)
+                for i in range(0,68):
+                    x0 = landmark.part(i).x
+                    y0 = landmark.part(i).y
 
-              # flattening before enter cuda calculation
-              # a33 = numpy.concatenate(all_area33).ravel().astype(numpy.float32)
-              a17 = numpy.concatenate(all_area17).ravel().astype(numpy.float32)
-              a9 = numpy.concatenate(all_area9).ravel().astype(numpy.float32)
-              a5 = numpy.concatenate(all_area5).ravel().astype(numpy.float32)
-              current = time.time()
-              # print("landmark ", current - start, "ms")
+                    # get sorround area of each single point
+                    # area33 = face_area[y0-16:y0+17, x0-16:x0+17]/255.0
+                    area17 = face_area[y0-8:y0+9, x0-8:x0+9]/255.0
+                    area9 = face_area[y0-4:y0+5, x0-4:x0+5]/255.0
+                    area5 = face_area[y0-2:y0+3, x0-2:x0+3]/255.0
 
-              # max thread per block is 1024, and max block per grid is 304, so be careful
-              # calculating parallel using GPU
-            #   conv33(drv.Out(r33r), drv.Out(r33i), drv.In(a33), drv.In(f33r), drv.In(f33i), block=(68,4,1), grid=(33,33))
-            #   conv17(drv.Out(r17r), drv.Out(r17i), drv.In(a17), drv.In(f17r), drv.In(f17i), block=(68,4,1), grid=(17,17))
-            #   conv9(drv.Out(r9r), drv.Out(r9i), drv.In(a9), drv.In(f9r), drv.In(f9i), block=(68,4,1), grid=(9,9))
-              # r33r = a33 * f33r
-              # r33i = a33 * f33i
-              r17r = a17 * f17r
-              r17i = a17 * f17i
-              r9r = a9 * f9r
-              r9i = a9 * f9i
-              r5r = a5 * f5r
-              r5i = a5 * f5i
+                    # multiply each sorround area 4 times for same with filter for 4 orientation convolution
+                    for dup in range(4):
+                        # all_area33.append(area33)
+                        all_area17.append(area17)
+                        all_area9.append(area9)
+                        all_area5.append(area5)
+                    cv2.circle(face_area, (x0,y0), 1, (0,255,255),2)
 
-              # accumulate value each filtersize^2 index
-              # splr33r = numpy.sum(numpy.split(r33r,272),axis = 1)
-              # splr33i = numpy.sum(numpy.split(r33i,272),axis = 1)
-              splr17r = numpy.sum(numpy.split(r17r,272),axis = 1)
-              splr17i = numpy.sum(numpy.split(r17i,272),axis = 1)
-              splr9r = numpy.sum(numpy.split(r9r,272),axis = 1)
-              splr9i = numpy.sum(numpy.split(r9i,272),axis = 1)
-              splr5r = numpy.sum(numpy.split(r5r,272),axis = 1)
-              splr5i = numpy.sum(numpy.split(r5i,272),axis = 1)
+                cv2.imshow("normalize",face_area)
+                # flattening before enter cuda calculation
+                # a33 = numpy.concatenate(all_area33).ravel().astype(numpy.float32)
+                a17 = numpy.concatenate(all_area17).ravel().astype(numpy.float32)
+                a9 = numpy.concatenate(all_area9).ravel().astype(numpy.float32)
+                a5 = numpy.concatenate(all_area5).ravel().astype(numpy.float32)
+                current = time.time()
+                # print("landmark ", current - start, "ms")
 
-              # calculating magnitude of each pair filter
-              # mag33 = numpy.sqrt(splr33r**2 + splr33i**2)
-              mag17 = numpy.sqrt(splr17r**2 + splr17i**2)
-              mag9 = numpy.sqrt(splr9r**2 + splr9i**2)
-              mag5 = numpy.sqrt(splr5r**2 + splr5i**2)
+                # max thread per block is 1024, and max block per grid is 304, so be careful
+                # calculating parallel using GPU
+              #   conv33(drv.Out(r33r), drv.Out(r33i), drv.In(a33), drv.In(f33r), drv.In(f33i), block=(68,4,1), grid=(33,33))
+              #   conv17(drv.Out(r17r), drv.Out(r17i), drv.In(a17), drv.In(f17r), drv.In(f17i), block=(68,4,1), grid=(17,17))
+              #   conv9(drv.Out(r9r), drv.Out(r9i), drv.In(a9), drv.In(f9r), drv.In(f9i), block=(68,4,1), grid=(9,9))
+                # r33r = a33 * f33r
+                # r33i = a33 * f33i
+                r17r = a17 * f17r
+                r17i = a17 * f17i
+                r9r = a9 * f9r
+                r9i = a9 * f9i
+                r5r = a5 * f5r
+                r5i = a5 * f5i
 
-              # calculating phase of each pair filter
-              # phase33 = numpy.arctan(splr33i / splr33r)
-              phase17 = numpy.arctan(splr17i / splr17r)
-              phase9 = numpy.arctan(splr9i / splr9r)
-              phase5 = numpy.arctan(splr5i / splr5r)
+                # accumulate value each filtersize^2 index
+                # splr33r = numpy.sum(numpy.split(r33r,272),axis = 1)
+                # splr33i = numpy.sum(numpy.split(r33i,272),axis = 1)
+                splr17r = numpy.sum(numpy.split(r17r,272),axis = 1)
+                splr17i = numpy.sum(numpy.split(r17i,272),axis = 1)
+                splr9r = numpy.sum(numpy.split(r9r,272),axis = 1)
+                splr9i = numpy.sum(numpy.split(r9i,272),axis = 1)
+                splr5r = numpy.sum(numpy.split(r5r,272),axis = 1)
+                splr5i = numpy.sum(numpy.split(r5i,272),axis = 1)
 
-              # combine each same size magnitude and phase into 1
-              # featureall = numpy.concatenate((mag33, phase33, mag17, phase17, mag9, phase9, mag5, phase5))
-              featureall = numpy.concatenate((mag17, phase17, mag9, phase9, mag5, phase5))
+                # calculating magnitude of each pair filter
+                # mag33 = numpy.sqrt(splr33r**2 + splr33i**2)
+                mag17 = numpy.sqrt(splr17r**2 + splr17i**2)
+                mag9 = numpy.sqrt(splr9r**2 + splr9i**2)
+                mag5 = numpy.sqrt(splr5r**2 + splr5i**2)
 
-              # Normalisasi ke 0 dan 1 sebelum masuk ke NN
-              normalize = ((featureall - numpy.amin(featureall)) * 1) / ( numpy.amax(featureall) - numpy.amin(featureall))
-              # convert to string before to dictionary
-              normalize = normalize.astype('str')
-              # convert dari numpy ke dictionary
-              jsonall = dict(enumerate(normalize,1))
-              # stream the data using kafka
-              stream(jsonall)
-              # cv2.imshow("camera",frame)
-              # cv2.waitKey(1)
+                # calculating phase of each pair filter
+                # phase33 = numpy.arctan(splr33i / splr33r)
+                phase17 = numpy.arctan(splr17i / splr17r)
+                phase9 = numpy.arctan(splr9i / splr9r)
+                phase5 = numpy.arctan(splr5i / splr5r)
 
-              # frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
-              # yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                # combine each same size magnitude and phase into 1
+                # featureall = numpy.concatenate((mag33, phase33, mag17, phase17, mag9, phase9, mag5, phase5))
+                featureall = numpy.concatenate((mag17, phase17, mag9, phase9, mag5, phase5))
 
-              end = time.time()
-              # print('progress : ',float(s)/len(subject90)*100, ' %')
-              print('all time : ',end - start, ' ms')
-              # waktu.append(end-start)
+                # Normalisasi ke 0 dan 1 sebelum masuk ke NN
+                normalize = ((featureall - numpy.amin(featureall)) * 1) / ( numpy.amax(featureall) - numpy.amin(featureall))
+                # convert to string before to dictionary
+                normalize = normalize.astype('str')
+                # convert dari numpy ke dictionary
+                jsonall = dict(enumerate(normalize,1))
+                # stream the data using kafka
+                stream(jsonall)
+                # cv2.imshow("camera",frame)
+                # cv2.waitKey(1)
+
+                # frame = cv2.imencode(".jpg", frame[20:y-20,20:x-20])[1].tobytes()
+                # yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                cv2.rectangle(frame, (boundary,boundary), (x-boundary,y-boundary), (0,255,255),2)
+                cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,255),2)
+
+                end = time.time()
+                # print('progress : ',float(s)/len(subject90)*100, ' %')
+                print('all time : ',end - start, ' ms')
+                # waktu.append(end-start)
         # realtime
         cv2.imshow("camera",frame)
         cv2.waitKey(1)
